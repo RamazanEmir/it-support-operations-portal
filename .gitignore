@@ -5,19 +5,16 @@ __pycache__/
 
 # Database
 *.db
-*.db-journal
-*.db-wal
-*.db-shm
 *.sqlite
 *.sqlite3
-
-# Frontend
-frontend/node_modules/
-frontend/dist/
 
 # Environment
 .env
 .env.*
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
 
 # IDE
 .vscode/
