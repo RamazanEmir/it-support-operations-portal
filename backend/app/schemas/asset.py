@@ -20,6 +20,10 @@ class AssetCreate(AssetBase):
     pass
 
 
+class AssetUpdate(AssetBase):
+    status: AssetStatus
+
+
 class AssetResponse(AssetBase):
     model_config = ConfigDict(from_attributes=True)
 
