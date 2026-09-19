@@ -17,6 +17,11 @@ class ITRequestCreate(ITRequestBase):
     employee_id: int
 
 
+class ITRequestUpdate(ITRequestBase):
+    status: RequestStatus
+    employee_id: int
+
+
 class ITRequestResponse(ITRequestBase):
     model_config = ConfigDict(from_attributes=True)
 
