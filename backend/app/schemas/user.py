@@ -15,6 +15,10 @@ class UserCreate(UserBase):
     pass
 
 
+class UserUpdate(UserBase):
+    pass
+
+
 class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
