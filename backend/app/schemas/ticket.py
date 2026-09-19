@@ -18,6 +18,12 @@ class TicketCreate(TicketBase):
     employee_id: int
 
 
+class TicketUpdate(TicketBase):
+    status: TicketStatus
+    employee_id: int
+    resolution: str | None
+
+
 class TicketResponse(TicketBase):
     model_config = ConfigDict(from_attributes=True)
 
