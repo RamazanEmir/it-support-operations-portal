@@ -27,3 +27,19 @@ class TicketStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     RESOLVED = "resolved"
     CLOSED = "closed"
+
+
+class RequestType(str, Enum):
+    SOFTWARE_INSTALLATION = "software_installation"
+    ACCOUNT_CREATION = "account_creation"
+    VPN_ACCESS = "vpn_access"
+    PERMISSION_REQUEST = "permission_request"
+    HARDWARE_REQUEST = "hardware_request"
+    OTHER = "other"
+
+
+class RequestStatus(str, Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    REJECTED = "rejected"
