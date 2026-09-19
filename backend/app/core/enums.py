@@ -43,3 +43,20 @@ class RequestStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     REJECTED = "rejected"
+
+
+class AssetCategory(str, Enum):
+    LAPTOP = "laptop"
+    DESKTOP = "desktop"
+    MONITOR = "monitor"
+    PHONE = "phone"
+    PRINTER = "printer"
+    NETWORK_DEVICE = "network_device"
+    OTHER = "other"
+
+
+class AssetStatus(str, Enum):
+    AVAILABLE = "available"
+    ASSIGNED = "assigned"
+    MAINTENANCE = "maintenance"
+    RETIRED = "retired"
