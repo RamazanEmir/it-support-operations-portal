@@ -74,7 +74,11 @@ def delete_user(db: Session, user_id: int) -> None:
         if (
             isinstance(error, IntegrityError)
             and isinstance(error.orig, ForeignKeyViolation)
-            and error.orig.diag.constraint_name == "tickets_employee_id_fkey"
         ):
-            raise UserConflictError("User is referenced by a ticket.") from None
+            if error.orig.diag.constraint_name == "tickets_employee_id_fkey":
+                raise UserConflictError("User is referenced by a ticket.") from None
+            if error.orig.diag.constraint_name == "it_requests_employee_id_fkey":
+                raise UserConflictError("User is referenced by an IT request.") from None
+            if error.orig.diag.constraint_name == "asset_assignments_employee_id_fkey":
+                raise UserConflictError("User is referenced by an assignment.") from None
         raise

@@ -52,4 +52,6 @@ def delete_asset(asset_id: int, db: Annotated[Session, Depends(get_db)]) -> Resp
         asset_service.delete_asset(db, asset_id)
     except asset_service.AssetNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from None
+    except asset_service.AssetConflictError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)

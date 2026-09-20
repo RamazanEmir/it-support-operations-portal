@@ -1,8 +1,9 @@
-from psycopg.errors import UniqueViolation
+from psycopg.errors import ForeignKeyViolation, UniqueViolation
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core.enums import AssetStatus
 from app.models import Asset
 from app.schemas.asset import AssetCreate, AssetUpdate
 
@@ -44,8 +45,17 @@ def create_asset(db: Session, asset_data: AssetCreate) -> Asset:
 
 
 def update_asset(db: Session, asset_id: int, asset_data: AssetUpdate) -> Asset:
-    asset = get_asset(db, asset_id)
     try:
+        asset = db.scalar(
+            select(Asset)
+            .where(Asset.id == asset_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        if asset is None:
+            raise AssetNotFoundError("Asset not found.")
+        if (asset.status == AssetStatus.ASSIGNED) != (asset_data.status == AssetStatus.ASSIGNED):
+            raise AssetConflictError("Assigned status can only be changed through the assignment workflow.")
         asset.asset_tag = asset_data.asset_tag
         asset.name = asset_data.name
         asset.category = asset_data.category
@@ -55,6 +65,9 @@ def update_asset(db: Session, asset_id: int, asset_data: AssetUpdate) -> Asset:
         asset.status = asset_data.status
         db.commit()
         db.refresh(asset)
+    except (AssetNotFoundError, AssetConflictError):
+        db.rollback()
+        raise
     except SQLAlchemyError as error:
         db.rollback()
         if isinstance(error, IntegrityError) and isinstance(error.orig, UniqueViolation):
@@ -71,6 +84,12 @@ def delete_asset(db: Session, asset_id: int) -> None:
     try:
         db.delete(asset)
         db.commit()
-    except SQLAlchemyError:
+    except SQLAlchemyError as error:
         db.rollback()
+        if (
+            isinstance(error, IntegrityError)
+            and isinstance(error.orig, ForeignKeyViolation)
+            and error.orig.diag.constraint_name == "asset_assignments_asset_id_fkey"
+        ):
+            raise AssetConflictError("Asset is referenced by an assignment.") from None
         raise
