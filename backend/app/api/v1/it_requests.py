@@ -50,4 +50,6 @@ def delete_it_request(request_id: int, db: Annotated[Session, Depends(get_db)]) 
         it_request_service.delete_it_request(db, request_id)
     except it_request_service.ITRequestNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from None
+    except it_request_service.ITRequestConflictError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)

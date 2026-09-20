@@ -8,6 +8,10 @@ from app.schemas.ticket import TicketCreate, TicketUpdate
 from app.services import user_service
 
 
+class TicketConflictError(Exception):
+    pass
+
+
 class TicketNotFoundError(Exception):
     pass
 
@@ -72,6 +76,12 @@ def delete_ticket(db: Session, ticket_id: int) -> None:
     try:
         db.delete(ticket)
         db.commit()
-    except SQLAlchemyError:
+    except SQLAlchemyError as error:
         db.rollback()
+        if (
+            isinstance(error, IntegrityError)
+            and isinstance(error.orig, ForeignKeyViolation)
+            and error.orig.diag.constraint_name == "work_logs_ticket_id_fkey"
+        ):
+            raise TicketConflictError("Ticket is referenced by a work log.") from None
         raise

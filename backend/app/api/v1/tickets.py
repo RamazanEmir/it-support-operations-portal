@@ -50,4 +50,6 @@ def delete_ticket(ticket_id: int, db: Annotated[Session, Depends(get_db)]) -> Re
         ticket_service.delete_ticket(db, ticket_id)
     except ticket_service.TicketNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from None
+    except ticket_service.TicketConflictError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)

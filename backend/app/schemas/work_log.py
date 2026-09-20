@@ -24,6 +24,11 @@ class WorkLogCreate(WorkLogBase):
         return self
 
 
+class WorkLogUpdate(WorkLogCreate):
+    ticket_id: int | None = Field(...)
+    it_request_id: int | None = Field(...)
+
+
 class WorkLogResponse(WorkLogBase):
     model_config = ConfigDict(from_attributes=True)
 

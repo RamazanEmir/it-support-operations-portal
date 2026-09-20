@@ -77,6 +77,8 @@ def delete_user(db: Session, user_id: int) -> None:
         ):
             if error.orig.diag.constraint_name == "tickets_employee_id_fkey":
                 raise UserConflictError("User is referenced by a ticket.") from None
+            if error.orig.diag.constraint_name == "work_logs_technician_id_fkey":
+                raise UserConflictError("User is referenced by a work log.") from None
             if error.orig.diag.constraint_name == "it_requests_employee_id_fkey":
                 raise UserConflictError("User is referenced by an IT request.") from None
             if error.orig.diag.constraint_name == "asset_assignments_employee_id_fkey":

@@ -8,6 +8,10 @@ from app.schemas.it_request import ITRequestCreate, ITRequestUpdate
 from app.services import user_service
 
 
+class ITRequestConflictError(Exception):
+    pass
+
+
 class ITRequestNotFoundError(Exception):
     pass
 
@@ -70,6 +74,12 @@ def delete_it_request(db: Session, request_id: int) -> None:
     try:
         db.delete(it_request)
         db.commit()
-    except SQLAlchemyError:
+    except SQLAlchemyError as error:
         db.rollback()
+        if (
+            isinstance(error, IntegrityError)
+            and isinstance(error.orig, ForeignKeyViolation)
+            and error.orig.diag.constraint_name == "work_logs_it_request_id_fkey"
+        ):
+            raise ITRequestConflictError("IT Request is referenced by a work log.") from None
         raise
