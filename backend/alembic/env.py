@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 
 from app.core.database import Base, engine
-from app.models import Asset, AssetAssignment, ITRequest, Ticket, User, WorkLog
+from app.models import Asset, AssetAssignment, ITRequest, KnowledgeBaseArticle, Ticket, User, WorkLog
 
 config = context.config
 
