@@ -15,6 +15,10 @@ class KnowledgeBaseArticleCreate(KnowledgeBaseArticleBase):
     pass
 
 
+class KnowledgeBaseArticleUpdate(KnowledgeBaseArticleBase):
+    pass
+
+
 class KnowledgeBaseArticleResponse(KnowledgeBaseArticleBase):
     model_config = ConfigDict(from_attributes=True)
 
