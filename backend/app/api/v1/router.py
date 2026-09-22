@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.v1.asset_assignments import router as asset_assignments_router
 from app.api.v1.assets import router as assets_router
+from app.api.v1.dashboard import router as dashboard_router
 from app.api.v1.health import router as health_router
 from app.api.v1.it_requests import router as it_requests_router
 from app.api.v1.knowledge_base import router as knowledge_base_router
@@ -19,3 +20,4 @@ api_router.include_router(assets_router)
 api_router.include_router(asset_assignments_router)
 api_router.include_router(work_logs_router)
 api_router.include_router(knowledge_base_router)
+api_router.include_router(dashboard_router)
