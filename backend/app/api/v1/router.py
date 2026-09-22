@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.v1.analytics import router as analytics_router
 from app.api.v1.asset_assignments import router as asset_assignments_router
 from app.api.v1.assets import router as assets_router
 from app.api.v1.dashboard import router as dashboard_router
@@ -21,3 +22,4 @@ api_router.include_router(asset_assignments_router)
 api_router.include_router(work_logs_router)
 api_router.include_router(knowledge_base_router)
 api_router.include_router(dashboard_router)
+api_router.include_router(analytics_router)
