@@ -1,0 +1,73 @@
+import { useEffect, useRef, useState } from 'react'
+import { Outlet, useLocation } from 'react-router'
+import Header from './Header'
+import Sidebar from './Sidebar'
+
+function AppLayout() {
+  const { pathname } = useLocation()
+  const navigationRef = useRef<HTMLDialogElement>(null)
+  const [navigationOpen, setNavigationOpen] = useState(false)
+  const title = pathname === '/' ? 'IT Support Operations Portal' : 'Page not found'
+
+  useEffect(() => {
+    navigationRef.current?.close()
+  }, [pathname])
+
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    function closeOnDesktop() {
+      if (desktop.matches) navigationRef.current?.close()
+    }
+    desktop.addEventListener('change', closeOnDesktop)
+    return () => desktop.removeEventListener('change', closeOnDesktop)
+  }, [])
+
+  useEffect(() => {
+    if (!navigationOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [navigationOpen])
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="fixed inset-y-0 left-0 z-40 hidden w-60 lg:block">
+        <Sidebar />
+      </div>
+      <dialog
+        ref={navigationRef}
+        id="mobile-navigation"
+        aria-label="Navigation"
+        className="fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-60 max-w-none border-0 bg-slate-950 p-0 text-white backdrop:bg-slate-950/40"
+        onClose={() => setNavigationOpen(false)}
+        onClick={(event) => {
+          if (event.target !== event.currentTarget) return
+          const bounds = event.currentTarget.getBoundingClientRect()
+          if (
+            event.clientX < bounds.left || event.clientX > bounds.right ||
+            event.clientY < bounds.top || event.clientY > bounds.bottom
+          ) {
+            event.currentTarget.close()
+          }
+        }}
+      >
+        <Sidebar onClose={() => navigationRef.current?.close()} />
+      </dialog>
+      <div className="lg:pl-60">
+        <Header
+          title={title}
+          navigationOpen={navigationOpen}
+          onOpenNavigation={() => {
+            navigationRef.current?.showModal()
+            setNavigationOpen(true)
+          }}
+        />
+        <main className="mx-auto max-w-screen-2xl p-4 sm:p-6 lg:px-8 lg:py-7">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  )
+}
+
+export default AppLayout
