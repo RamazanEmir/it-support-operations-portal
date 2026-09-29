@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router'
 import Button from '../ui/Button'
 import Icon from '../ui/Icon'
 
@@ -22,7 +23,17 @@ function Sidebar({ onClose }: SidebarProps) {
           </Button>
         )}
       </div>
-      <nav aria-label="Main navigation" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-5" />
+      <nav aria-label="Main navigation" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-5">
+        <NavLink
+          to="/users" onClick={onClose}
+          className={({ isActive }) => `relative flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${isActive
+            ? 'bg-slate-800 text-white hover:bg-slate-800 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-blue-400'
+            : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'}`}
+        >
+          <Icon name="users" />
+          Users
+        </NavLink>
+      </nav>
     </aside>
   )
 }

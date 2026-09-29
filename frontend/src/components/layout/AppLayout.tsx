@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Outlet, useLocation } from 'react-router'
+import { matchPath, Outlet, useLocation } from 'react-router'
 import Header from './Header'
 import Sidebar from './Sidebar'
 
@@ -7,7 +7,11 @@ function AppLayout() {
   const { pathname } = useLocation()
   const navigationRef = useRef<HTMLDialogElement>(null)
   const [navigationOpen, setNavigationOpen] = useState(false)
-  const title = pathname === '/' ? 'IT Support Operations Portal' : 'Page not found'
+  let title = 'Page not found'
+  if (pathname === '/') title = 'IT Support Operations Portal'
+  else if (matchPath('/users/new', pathname)) title = 'Add User'
+  else if (matchPath('/users/:id/edit', pathname)) title = 'Edit User'
+  else if (matchPath('/users', pathname)) title = 'Users'
 
   useEffect(() => {
     navigationRef.current?.close()

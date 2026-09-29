@@ -1,11 +1,17 @@
 ﻿import { Link, Route, Routes } from 'react-router'
 import AppLayout from './components/layout/AppLayout'
+import UsersPage from './pages/UsersPage'
+import AddUserPage from './pages/AddUserPage'
+import EditUserPage from './pages/EditUserPage'
 
 function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={null} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="users/new" element={<AddUserPage />} />
+        <Route path="users/:id/edit" element={<EditUserPage />} />
         <Route path="*" element={
           <section>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Page not found</h1>
