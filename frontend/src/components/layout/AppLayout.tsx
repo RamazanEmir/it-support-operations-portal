@@ -12,6 +12,9 @@ function AppLayout() {
   else if (matchPath('/users/new', pathname)) title = 'Add User'
   else if (matchPath('/users/:id/edit', pathname)) title = 'Edit User'
   else if (matchPath('/users', pathname)) title = 'Users'
+  else if (matchPath('/tickets/new', pathname)) title = 'Create Ticket'
+  else if (matchPath('/tickets/:id', pathname)) title = 'Ticket Details'
+  else if (matchPath('/tickets', pathname)) title = 'Tickets'
 
   useEffect(() => {
     navigationRef.current?.close()

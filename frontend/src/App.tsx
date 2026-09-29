@@ -3,6 +3,9 @@ import AppLayout from './components/layout/AppLayout'
 import UsersPage from './pages/UsersPage'
 import AddUserPage from './pages/AddUserPage'
 import EditUserPage from './pages/EditUserPage'
+import TicketsPage from './pages/TicketsPage'
+import CreateTicketPage from './pages/CreateTicketPage'
+import TicketDetailsPage from './pages/TicketDetailsPage'
 
 function App() {
   return (
@@ -12,6 +15,9 @@ function App() {
         <Route path="users" element={<UsersPage />} />
         <Route path="users/new" element={<AddUserPage />} />
         <Route path="users/:id/edit" element={<EditUserPage />} />
+        <Route path="tickets" element={<TicketsPage />} />
+        <Route path="tickets/new" element={<CreateTicketPage />} />
+        <Route path="tickets/:id" element={<TicketDetailsPage />} />
         <Route path="*" element={
           <section>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Page not found</h1>
