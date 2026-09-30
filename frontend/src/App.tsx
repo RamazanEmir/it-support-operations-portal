@@ -7,12 +7,20 @@ import TicketsPage from './pages/TicketsPage'
 import CreateTicketPage from './pages/CreateTicketPage'
 import TicketDetailsPage from './pages/TicketDetailsPage'
 import DashboardPage from './pages/DashboardPage'
+import ITRequestsPage from './pages/ITRequestsPage'
+import CreateITRequestPage from './pages/CreateITRequestPage'
+import ITRequestDetailsPage from './pages/ITRequestDetailsPage'
+import EditITRequestPage from './pages/EditITRequestPage'
 
 function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="it-requests" element={<ITRequestsPage />} />
+        <Route path="it-requests/new" element={<CreateITRequestPage />} />
+        <Route path="it-requests/:id" element={<ITRequestDetailsPage />} />
+        <Route path="it-requests/:id/edit" element={<EditITRequestPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="users/new" element={<AddUserPage />} />
         <Route path="users/:id/edit" element={<EditUserPage />} />
