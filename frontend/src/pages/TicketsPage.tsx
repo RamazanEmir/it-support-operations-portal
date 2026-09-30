@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { formatTicketDate, getTicketErrorMessage, getTickets, ticketCategoryLabels, ticketPriorityLabels, ticketStatusLabels } from '../api/tickets'
 import type { TicketCategory, TicketPriority, TicketStatus } from '../api/tickets'
 import { getUsers } from '../api/users'
+import { priorityTones, statusTones } from '../components/tickets/ticketPresentation'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -12,9 +13,6 @@ import Icon from '../components/ui/Icon'
 import PageHeader from '../components/ui/PageHeader'
 import Select from '../components/ui/Select'
 import Table from '../components/ui/Table'
-
-const priorityTones = { low: 'slate', medium: 'amber', high: 'red' } as const
-const statusTones = { open: 'blue', in_progress: 'amber', resolved: 'emerald', closed: 'slate' } as const
 
 function TicketsPage() {
   const navigate = useNavigate()

@@ -1,5 +1,5 @@
 type IconProps = {
-  name: 'ticket' | 'menu' | 'close' | 'users' | 'plus' | 'arrow-left'
+  name: 'dashboard' | 'ticket' | 'menu' | 'close' | 'users' | 'plus' | 'arrow-left'
   className?: string
 }
 
@@ -15,6 +15,7 @@ function Icon({ name, className = 'size-5' }: IconProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
+      {name === 'dashboard' && <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />}
       {name === 'ticket' && (
         <>
           <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5V9a3 3 0 0 0 0 6v3.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5V15a3 3 0 0 0 0-6V5.5Z" />

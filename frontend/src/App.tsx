@@ -6,12 +6,13 @@ import EditUserPage from './pages/EditUserPage'
 import TicketsPage from './pages/TicketsPage'
 import CreateTicketPage from './pages/CreateTicketPage'
 import TicketDetailsPage from './pages/TicketDetailsPage'
+import DashboardPage from './pages/DashboardPage'
 
 function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route index element={null} />
+        <Route index element={<DashboardPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="users/new" element={<AddUserPage />} />
         <Route path="users/:id/edit" element={<EditUserPage />} />

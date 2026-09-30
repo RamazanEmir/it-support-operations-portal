@@ -8,7 +8,7 @@ function AppLayout() {
   const navigationRef = useRef<HTMLDialogElement>(null)
   const [navigationOpen, setNavigationOpen] = useState(false)
   let title = 'Page not found'
-  if (pathname === '/') title = 'IT Support Operations Portal'
+  if (pathname === '/') title = 'Dashboard'
   else if (matchPath('/users/new', pathname)) title = 'Add User'
   else if (matchPath('/users/:id/edit', pathname)) title = 'Edit User'
   else if (matchPath('/users', pathname)) title = 'Users'
