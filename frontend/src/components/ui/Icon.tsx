@@ -1,5 +1,5 @@
 type IconProps = {
-  name: 'dashboard' | 'ticket' | 'menu' | 'close' | 'users' | 'plus' | 'arrow-left'
+  name: 'asset' | 'dashboard' | 'ticket' | 'menu' | 'close' | 'users' | 'plus' | 'arrow-left'
   className?: string
 }
 
@@ -23,6 +23,7 @@ function Icon({ name, className = 'size-5' }: IconProps) {
         </>
       )}
       {name === 'menu' && <path d="M4 6h16M4 12h16M4 18h16" />}
+      {name === 'asset' && <><rect x="3" y="3" width="18" height="13" rx="2" /><path d="M8 21h8M12 16v5" /></>}
       {name === 'close' && <path d="m6 6 12 12M18 6 6 18" />}
       {name === 'users' && (
         <>

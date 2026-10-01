@@ -11,12 +11,20 @@ import ITRequestsPage from './pages/ITRequestsPage'
 import CreateITRequestPage from './pages/CreateITRequestPage'
 import ITRequestDetailsPage from './pages/ITRequestDetailsPage'
 import EditITRequestPage from './pages/EditITRequestPage'
+import AssetsPage from './pages/AssetsPage'
+import CreateAssetPage from './pages/CreateAssetPage'
+import AssetDetailsPage from './pages/AssetDetailsPage'
+import EditAssetPage from './pages/EditAssetPage'
 
 function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="assets" element={<AssetsPage />} />
+        <Route path="assets/new" element={<CreateAssetPage />} />
+        <Route path="assets/:id" element={<AssetDetailsPage />} />
+        <Route path="assets/:id/edit" element={<EditAssetPage />} />
         <Route path="it-requests" element={<ITRequestsPage />} />
         <Route path="it-requests/new" element={<CreateITRequestPage />} />
         <Route path="it-requests/:id" element={<ITRequestDetailsPage />} />
