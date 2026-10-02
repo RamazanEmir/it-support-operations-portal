@@ -18,12 +18,20 @@ import EditAssetPage from './pages/EditAssetPage'
 import AssignmentsPage from './pages/AssignmentsPage'
 import CreateAssignmentPage from './pages/CreateAssignmentPage'
 import AssignmentDetailsPage from './pages/AssignmentDetailsPage'
+import WorkLogsPage from './pages/WorkLogsPage'
+import CreateWorkLogPage from './pages/CreateWorkLogPage'
+import WorkLogDetailsPage from './pages/WorkLogDetailsPage'
+import EditWorkLogPage from './pages/EditWorkLogPage'
 
 function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="work-logs" element={<WorkLogsPage />} />
+        <Route path="work-logs/new" element={<CreateWorkLogPage />} />
+        <Route path="work-logs/:id" element={<WorkLogDetailsPage />} />
+        <Route path="work-logs/:id/edit" element={<EditWorkLogPage />} />
         <Route path="assignments" element={<AssignmentsPage />} />
         <Route path="assignments/new" element={<CreateAssignmentPage />} />
         <Route path="assignments/:id" element={<AssignmentDetailsPage />} />

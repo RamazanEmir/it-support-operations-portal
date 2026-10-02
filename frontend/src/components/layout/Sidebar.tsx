@@ -87,6 +87,18 @@ function Sidebar({ onClose }: SidebarProps) {
             Assignments
           </NavLink>
         </div>
+        <div className="pt-4">
+          <div className="mb-2 px-3 text-xs font-medium text-slate-400">Operations</div>
+          <NavLink
+            to="/work-logs" onClick={onClose}
+            className={({ isActive }) => `relative flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${isActive
+              ? 'bg-slate-800 text-white hover:bg-slate-800 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-blue-400'
+              : 'text-slate-400 hover:bg-slate-900 hover:text-slate-100'}`}
+          >
+            <Icon name="ticket" />
+            Work Logs
+          </NavLink>
+        </div>
       </nav>
     </aside>
   )
