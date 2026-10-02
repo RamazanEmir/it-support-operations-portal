@@ -15,12 +15,18 @@ import AssetsPage from './pages/AssetsPage'
 import CreateAssetPage from './pages/CreateAssetPage'
 import AssetDetailsPage from './pages/AssetDetailsPage'
 import EditAssetPage from './pages/EditAssetPage'
+import AssignmentsPage from './pages/AssignmentsPage'
+import CreateAssignmentPage from './pages/CreateAssignmentPage'
+import AssignmentDetailsPage from './pages/AssignmentDetailsPage'
 
 function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="assignments" element={<AssignmentsPage />} />
+        <Route path="assignments/new" element={<CreateAssignmentPage />} />
+        <Route path="assignments/:id" element={<AssignmentDetailsPage />} />
         <Route path="assets" element={<AssetsPage />} />
         <Route path="assets/new" element={<CreateAssetPage />} />
         <Route path="assets/:id" element={<AssetDetailsPage />} />

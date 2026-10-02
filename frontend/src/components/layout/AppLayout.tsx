@@ -9,6 +9,9 @@ function AppLayout() {
   const [navigationOpen, setNavigationOpen] = useState(false)
   let title = 'Page not found'
   if (pathname === '/') title = 'Dashboard'
+  else if (matchPath('/assignments/new', pathname)) title = 'Assign Asset'
+  else if (matchPath('/assignments/:id', pathname)) title = 'Assignment Details'
+  else if (matchPath('/assignments', pathname)) title = 'Assignments'
   else if (matchPath('/assets/new', pathname)) title = 'Add Asset'
   else if (matchPath('/assets/:id/edit', pathname)) title = 'Edit Asset'
   else if (matchPath('/assets/:id', pathname)) title = 'Asset Details'
