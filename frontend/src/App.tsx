@@ -1,5 +1,6 @@
 ﻿import { Link, Route, Routes } from 'react-router'
 import AppLayout from './components/layout/AppLayout'
+import AnalyticsPage from './pages/AnalyticsPage'
 import UsersPage from './pages/UsersPage'
 import AddUserPage from './pages/AddUserPage'
 import EditUserPage from './pages/EditUserPage'
@@ -32,6 +33,7 @@ function App() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="knowledge-base" element={<KnowledgeBasePage />} />
         <Route path="knowledge-base/new" element={<CreateKnowledgeBaseArticlePage />} />
         <Route path="knowledge-base/:id" element={<KnowledgeBaseArticleDetailsPage />} />
