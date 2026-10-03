@@ -22,12 +22,20 @@ import WorkLogsPage from './pages/WorkLogsPage'
 import CreateWorkLogPage from './pages/CreateWorkLogPage'
 import WorkLogDetailsPage from './pages/WorkLogDetailsPage'
 import EditWorkLogPage from './pages/EditWorkLogPage'
+import KnowledgeBasePage from './pages/KnowledgeBasePage'
+import CreateKnowledgeBaseArticlePage from './pages/CreateKnowledgeBaseArticlePage'
+import KnowledgeBaseArticleDetailsPage from './pages/KnowledgeBaseArticleDetailsPage'
+import EditKnowledgeBaseArticlePage from './pages/EditKnowledgeBaseArticlePage'
 
 function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="knowledge-base" element={<KnowledgeBasePage />} />
+        <Route path="knowledge-base/new" element={<CreateKnowledgeBaseArticlePage />} />
+        <Route path="knowledge-base/:id" element={<KnowledgeBaseArticleDetailsPage />} />
+        <Route path="knowledge-base/:id/edit" element={<EditKnowledgeBaseArticlePage />} />
         <Route path="work-logs" element={<WorkLogsPage />} />
         <Route path="work-logs/new" element={<CreateWorkLogPage />} />
         <Route path="work-logs/:id" element={<WorkLogDetailsPage />} />
