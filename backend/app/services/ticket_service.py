@@ -16,12 +16,18 @@ class TicketNotFoundError(Exception):
     pass
 
 
-def list_tickets(db: Session) -> list[Ticket]:
-    return list(db.scalars(select(Ticket)).all())
+def list_tickets(db: Session, employee_id: int | None = None) -> list[Ticket]:
+    query = select(Ticket)
+    if employee_id is not None:
+        query = query.where(Ticket.employee_id == employee_id)
+    return list(db.scalars(query).all())
 
 
-def get_ticket(db: Session, ticket_id: int) -> Ticket:
-    ticket = db.get(Ticket, ticket_id)
+def get_ticket(db: Session, ticket_id: int, employee_id: int | None = None) -> Ticket:
+    query = select(Ticket).where(Ticket.id == ticket_id)
+    if employee_id is not None:
+        query = query.where(Ticket.employee_id == employee_id)
+    ticket = db.scalar(query)
     if ticket is None:
         raise TicketNotFoundError("Ticket not found.")
     return ticket

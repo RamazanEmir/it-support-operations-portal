@@ -1,5 +1,6 @@
 from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 
 from alembic.config import Config
 from alembic.migration import MigrationContext
@@ -32,8 +33,11 @@ def test_active_assignment_partial_unique_index(test_engine: Engine) -> None:
 
 def test_service_commit_and_rollback_remain_isolated(app: FastAPI, test_engine: Engine) -> None:
     from app.core.database import get_db
+    from app.core.security import create_access_token
+    from app.schemas.user import UserCreate
+    from app.services.user_service import create_user
 
-    data = {"name": "Isolation Employee", "email": "isolation@example.com", "role": "employee"}
+    data = {"name": "Isolation Employee", "email": "isolation@example.com", "role": "employee", "password": "Test-only password 123!"}
     previous_overrides = app.dependency_overrides.copy()
     with test_engine.connect() as connection:
         transaction = connection.begin()
@@ -44,10 +48,15 @@ def test_service_commit_and_rollback_remain_isolated(app: FastAPI, test_engine: 
 
         app.dependency_overrides[get_db] = override_get_db
         try:
-            with TestClient(app) as client:
+            admin = create_user(session, UserCreate(
+                name="Isolation Admin", email="isolation-admin@example.com", role="admin",
+                password="Test-only password 123!",
+            ))
+            headers = {"Authorization": "Bearer " + create_access_token(admin.id)}
+            with TestClient(app, headers=headers) as client:
                 assert client.post("/api/v1/users", json=data).status_code == 201
                 assert client.post("/api/v1/users", json=data).status_code == 409
-                assert client.get("/api/v1/users").json()[0]["email"] == data["email"]
+                assert {row["email"] for row in client.get("/api/v1/users").json()} == {admin.email, data["email"]}
                 assert client.post(
                     "/api/v1/users", json={**data, "email": "second@example.com"}
                 ).status_code == 201
@@ -62,7 +71,7 @@ def test_service_commit_and_rollback_remain_isolated(app: FastAPI, test_engine: 
         assert observer.scalar(text("SELECT count(*) FROM users")) == 0
 
 
-def test_client_starts_without_previous_data(client: TestClient) -> None:
+def test_client_starts_without_previous_data(client: TestClient, admin: dict[str, Any]) -> None:
     response = client.get("/api/v1/users")
     assert response.status_code == 200
-    assert response.json() == []
+    assert response.json() == [admin]  # Only this test's authentication fixture.

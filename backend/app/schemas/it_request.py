@@ -14,7 +14,7 @@ class ITRequestBase(BaseModel):
 
 
 class ITRequestCreate(ITRequestBase):
-    employee_id: int
+    employee_id: int | None = None
 
 
 class ITRequestUpdate(ITRequestBase):

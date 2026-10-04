@@ -16,12 +16,18 @@ class ITRequestNotFoundError(Exception):
     pass
 
 
-def list_it_requests(db: Session) -> list[ITRequest]:
-    return list(db.scalars(select(ITRequest)).all())
+def list_it_requests(db: Session, employee_id: int | None = None) -> list[ITRequest]:
+    query = select(ITRequest)
+    if employee_id is not None:
+        query = query.where(ITRequest.employee_id == employee_id)
+    return list(db.scalars(query).all())
 
 
-def get_it_request(db: Session, request_id: int) -> ITRequest:
-    it_request = db.get(ITRequest, request_id)
+def get_it_request(db: Session, request_id: int, employee_id: int | None = None) -> ITRequest:
+    query = select(ITRequest).where(ITRequest.id == request_id)
+    if employee_id is not None:
+        query = query.where(ITRequest.employee_id == employee_id)
+    it_request = db.scalar(query)
     if it_request is None:
         raise ITRequestNotFoundError("IT Request not found.")
     return it_request

@@ -3,7 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import get_current_user, require_roles
 from app.core.database import get_db
+from app.core.enums import UserRole
 from app.models import KnowledgeBaseArticle
 from app.schemas.knowledge_base_article import (
     KnowledgeBaseArticleCreate,
@@ -12,7 +14,10 @@ from app.schemas.knowledge_base_article import (
 )
 from app.services import knowledge_base_service
 
-router = APIRouter(prefix="/knowledge-base", tags=["Knowledge Base"])
+router = APIRouter(
+    prefix="/knowledge-base", tags=["Knowledge Base"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get("", response_model=list[KnowledgeBaseArticleResponse])
@@ -30,14 +35,20 @@ def get_article(article_id: int, db: Annotated[Session, Depends(get_db)]) -> Kno
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from None
 
 
-@router.post("", response_model=KnowledgeBaseArticleResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=KnowledgeBaseArticleResponse, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.TECHNICIAN))],
+)
 def create_article(
     article_data: KnowledgeBaseArticleCreate, db: Annotated[Session, Depends(get_db)]
 ) -> KnowledgeBaseArticle:
     return knowledge_base_service.create_article(db, article_data)
 
 
-@router.put("/{article_id}", response_model=KnowledgeBaseArticleResponse)
+@router.put(
+    "/{article_id}", response_model=KnowledgeBaseArticleResponse,
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.TECHNICIAN))],
+)
 def update_article(
     article_id: int,
     article_data: KnowledgeBaseArticleUpdate,
@@ -49,7 +60,10 @@ def update_article(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from None
 
 
-@router.delete("/{article_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{article_id}", status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_roles(UserRole.ADMIN))],
+)
 def delete_article(article_id: int, db: Annotated[Session, Depends(get_db)]) -> Response:
     try:
         knowledge_base_service.delete_article(db, article_id)

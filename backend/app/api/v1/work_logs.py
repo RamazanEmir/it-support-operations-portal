@@ -3,12 +3,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import get_current_user, require_roles
 from app.core.database import get_db
-from app.models import WorkLog
+from app.core.enums import UserRole
+from app.models import User, WorkLog
 from app.schemas.work_log import WorkLogCreate, WorkLogResponse, WorkLogUpdate
 from app.services import it_request_service, ticket_service, work_log_service, user_service
 
-router = APIRouter(prefix="/work-logs", tags=["Work Logs"])
+router = APIRouter(
+    prefix="/work-logs", tags=["Work Logs"],
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.TECHNICIAN))],
+)
 
 
 @router.get("", response_model=list[WorkLogResponse])
@@ -26,8 +31,11 @@ def get_work_log(work_log_id: int, db: Annotated[Session, Depends(get_db)]) -> W
 
 @router.post("", response_model=WorkLogResponse, status_code=status.HTTP_201_CREATED)
 def create_work_log(
-    work_log_data: WorkLogCreate, db: Annotated[Session, Depends(get_db)]
+    work_log_data: WorkLogCreate, db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> WorkLog:
+    if current_user.role == UserRole.TECHNICIAN:
+        work_log_data = work_log_data.model_copy(update={"technician_id": current_user.id})
     try:
         return work_log_service.create_work_log(db, work_log_data)
     except (
@@ -42,10 +50,14 @@ def create_work_log(
 
 @router.put("/{work_log_id}", response_model=WorkLogResponse)
 def update_work_log(
-    work_log_id: int, work_log_data: WorkLogUpdate, db: Annotated[Session, Depends(get_db)]
+    work_log_id: int, work_log_data: WorkLogUpdate, db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> WorkLog:
+    technician_id = current_user.id if current_user.role == UserRole.TECHNICIAN else None
     try:
-        return work_log_service.update_work_log(db, work_log_id, work_log_data)
+        return work_log_service.update_work_log(db, work_log_id, work_log_data, technician_id)
+    except work_log_service.WorkLogForbiddenError as error:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(error)) from None
     except (
         work_log_service.WorkLogNotFoundError,
         user_service.UserNotFoundError,
@@ -58,9 +70,15 @@ def update_work_log(
 
 
 @router.delete("/{work_log_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_work_log(work_log_id: int, db: Annotated[Session, Depends(get_db)]) -> Response:
+def delete_work_log(
+    work_log_id: int, db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> Response:
+    technician_id = current_user.id if current_user.role == UserRole.TECHNICIAN else None
     try:
-        work_log_service.delete_work_log(db, work_log_id)
+        work_log_service.delete_work_log(db, work_log_id, technician_id)
+    except work_log_service.WorkLogForbiddenError as error:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(error)) from None
     except work_log_service.WorkLogNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)

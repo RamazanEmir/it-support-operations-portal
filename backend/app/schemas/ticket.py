@@ -15,7 +15,7 @@ class TicketBase(BaseModel):
 
 
 class TicketCreate(TicketBase):
-    employee_id: int
+    employee_id: int | None = None
 
 
 class TicketUpdate(TicketBase):

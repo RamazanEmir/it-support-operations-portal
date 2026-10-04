@@ -1,4 +1,5 @@
 import os
+import secrets
 import sys
 from collections.abc import Generator
 from pathlib import Path
@@ -47,15 +48,24 @@ def pytest_configure(config: pytest.Config) -> None:
     if any(name == "app" or name.startswith("app.") for name in sys.modules):
         raise pytest.UsageError("Application modules were imported before test database safety checks.")
     previous_url = os.environ.get("DATABASE_URL")
+    previous_secret = os.environ.get("JWT_SECRET_KEY")
+    previous_expiry = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
 
     def restore_environment() -> None:
         if previous_url is None:
             os.environ.pop("DATABASE_URL", None)
         else:
             os.environ["DATABASE_URL"] = previous_url
+        for key, value in (("JWT_SECRET_KEY", previous_secret), ("ACCESS_TOKEN_EXPIRE_MINUTES", previous_expiry)):
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
 
     config.add_cleanup(restore_environment)
     os.environ["DATABASE_URL"] = test_url
+    os.environ["JWT_SECRET_KEY"] = secrets.token_urlsafe(48)
+    os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
 
 
 @pytest.fixture(scope="session")
@@ -112,7 +122,42 @@ def db_session(test_engine: Engine) -> Generator[Session, None, None]:
 
 
 @pytest.fixture
-def client(app: FastAPI, db_session: Session) -> Generator[TestClient, None, None]:
+def admin(db_session: Session) -> dict[str, Any]:
+    from app.schemas.user import UserCreate, UserResponse
+    from app.services.user_service import create_user
+
+    user = create_user(db_session, UserCreate(
+        name="Test Admin", email="admin@example.com", role="admin",
+        password="Test-only password 123!",
+    ))
+    return UserResponse.model_validate(user).model_dump(mode="json")
+
+
+@pytest.fixture
+def admin_headers(admin: dict[str, Any]) -> dict[str, str]:
+    from app.core.security import create_access_token
+
+    return {"Authorization": "Bearer " + create_access_token(admin["id"])}
+
+
+@pytest.fixture
+def technician_headers(technician: dict[str, Any]) -> dict[str, str]:
+    from app.core.security import create_access_token
+
+    return {"Authorization": "Bearer " + create_access_token(technician["id"])}
+
+
+@pytest.fixture
+def employee_headers(employee: dict[str, Any]) -> dict[str, str]:
+    from app.core.security import create_access_token
+
+    return {"Authorization": "Bearer " + create_access_token(employee["id"])}
+
+
+@pytest.fixture
+def client(
+    app: FastAPI, db_session: Session, admin_headers: dict[str, str],
+) -> Generator[TestClient, None, None]:
     from app.core.database import get_db
 
     def override_get_db() -> Generator[Session, None, None]:
@@ -121,7 +166,7 @@ def client(app: FastAPI, db_session: Session) -> Generator[TestClient, None, Non
     previous_overrides = app.dependency_overrides.copy()
     app.dependency_overrides[get_db] = override_get_db
     try:
-        with TestClient(app) as test_client:
+        with TestClient(app, headers=admin_headers) as test_client:
             yield test_client
     finally:
         app.dependency_overrides.clear()
@@ -129,9 +174,17 @@ def client(app: FastAPI, db_session: Session) -> Generator[TestClient, None, Non
 
 
 @pytest.fixture
+def anonymous_client(client: TestClient, app: FastAPI) -> Generator[TestClient, None, None]:
+    # Reuse the database override, but never inherit the admin client's headers.
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
 def employee(client: TestClient) -> dict[str, Any]:
     response = client.post("/api/v1/users", json={
         "name": "Test Employee", "email": "employee@example.com", "role": "employee",
+        "password": "Test-only password 123!",
     })
     assert response.status_code == 201
     return response.json()
@@ -141,6 +194,7 @@ def employee(client: TestClient) -> dict[str, Any]:
 def technician(client: TestClient) -> dict[str, Any]:
     response = client.post("/api/v1/users", json={
         "name": "Test Technician", "email": "technician@example.com", "role": "technician",
+        "password": "Test-only password 123!",
     })
     assert response.status_code == 201
     return response.json()

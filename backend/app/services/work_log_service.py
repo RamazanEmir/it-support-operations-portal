@@ -17,6 +17,10 @@ class WorkLogConflictError(Exception):
     pass
 
 
+class WorkLogForbiddenError(Exception):
+    pass
+
+
 def list_work_logs(db: Session) -> list[WorkLog]:
     return list(db.scalars(select(WorkLog)).all())
 
@@ -54,8 +58,15 @@ def create_work_log(db: Session, work_log_data: WorkLogCreate) -> WorkLog:
     return work_log
 
 
-def update_work_log(db: Session, work_log_id: int, work_log_data: WorkLogUpdate) -> WorkLog:
+def update_work_log(
+    db: Session, work_log_id: int, work_log_data: WorkLogUpdate,
+    technician_id: int | None = None,
+) -> WorkLog:
     work_log = get_work_log(db, work_log_id)
+    if technician_id is not None:
+        if work_log.technician_id != technician_id:
+            raise WorkLogForbiddenError("Permission denied.")
+        work_log_data = work_log_data.model_copy(update={"technician_id": technician_id})
     technician = user_service.get_user(db, work_log_data.technician_id)
     if technician.role != UserRole.TECHNICIAN:
         raise WorkLogConflictError("User must have the technician role.")
@@ -85,8 +96,10 @@ def update_work_log(db: Session, work_log_id: int, work_log_data: WorkLogUpdate)
     return work_log
 
 
-def delete_work_log(db: Session, work_log_id: int) -> None:
+def delete_work_log(db: Session, work_log_id: int, technician_id: int | None = None) -> None:
     work_log = get_work_log(db, work_log_id)
+    if technician_id is not None and work_log.technician_id != technician_id:
+        raise WorkLogForbiddenError("Permission denied.")
     try:
         db.delete(work_log)
         db.commit()

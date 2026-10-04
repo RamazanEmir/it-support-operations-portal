@@ -4,15 +4,15 @@ import pytest
 from fastapi.testclient import TestClient
 
 
-def test_user_crud(client: TestClient) -> None:
+def test_user_crud(client: TestClient, admin: dict[str, Any]) -> None:
     data = {"name": "Test Employee", "email": "employee@example.com", "role": "employee"}
-    response = client.post("/api/v1/users", json=data)
+    response = client.post("/api/v1/users", json={**data, "password": "Test-only password 123!"})
     assert response.status_code == 201
     user = response.json()
     assert user == {"id": user["id"], **data}
     url = f"/api/v1/users/{user['id']}"
     assert client.get(url).json() == user
-    assert client.get("/api/v1/users").json() == [user]
+    assert client.get("/api/v1/users").json() == [admin, user]
     updated = client.put(url, json={**data, "name": "Updated Employee", "role": "technician"})
     assert updated.status_code == 200
     assert updated.json()["name"] == "Updated Employee"
@@ -24,9 +24,9 @@ def test_user_crud(client: TestClient) -> None:
 
 
 def test_duplicate_email_create_returns_409(client: TestClient, employee: dict[str, Any]) -> None:
-    response = client.post("/api/v1/users", json=employee)
+    response = client.post("/api/v1/users", json={**employee, "password": "Test-only password 123!"})
     assert response.status_code == 409
-    assert len(client.get("/api/v1/users").json()) == 1
+    assert len(client.get("/api/v1/users").json()) == 2  # Admin and employee.
 
 
 def test_duplicate_email_update_returns_409(

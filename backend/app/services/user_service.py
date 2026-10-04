@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models import User
+from app.core.security import hash_password
 from app.schemas.user import UserCreate, UserUpdate
 
 
@@ -27,7 +28,7 @@ def get_user(db: Session, user_id: int) -> User:
 
 
 def create_user(db: Session, user_data: UserCreate) -> User:
-    user = User(**user_data.model_dump())
+    user = User(**user_data.model_dump(exclude={"password"}), password_hash=hash_password(user_data.password))
     try:
         db.add(user)
         db.commit()
@@ -50,6 +51,8 @@ def update_user(db: Session, user_id: int, user_data: UserUpdate) -> User:
         user.name = user_data.name
         user.email = str(user_data.email)
         user.role = user_data.role
+        if user_data.password is not None:
+            user.password_hash = hash_password(user_data.password)
         db.commit()
         db.refresh(user)
     except SQLAlchemyError as error:

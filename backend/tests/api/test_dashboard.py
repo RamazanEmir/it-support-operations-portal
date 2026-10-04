@@ -7,7 +7,7 @@ def test_empty_dashboard(client: TestClient) -> None:
     response = client.get("/api/v1/dashboard/summary")
     assert response.status_code == 200
     assert response.json() == {
-        "users_total": 0,
+        "users_total": 1,  # Authentication admin; no business fixture data.
         "tickets": {"total": 0, "open": 0, "in_progress": 0, "resolved": 0, "closed": 0},
         "it_requests": {"total": 0, "pending": 0, "in_progress": 0, "completed": 0, "rejected": 0},
         "assets": {"total": 0, "available": 0, "assigned": 0, "maintenance": 0, "retired": 0},
@@ -55,7 +55,7 @@ def test_dashboard_counts_all_modules(
     response = client.get("/api/v1/dashboard/summary")
     assert response.status_code == 200
     assert response.json() == {
-        "users_total": 2,
+        "users_total": 3,  # Admin, employee and technician.
         "tickets": {"total": 4, "open": 1, "in_progress": 1, "resolved": 1, "closed": 1},
         "it_requests": {"total": 4, "pending": 1, "in_progress": 1, "completed": 1, "rejected": 1},
         "assets": {"total": 4, "available": 1, "assigned": 1, "maintenance": 1, "retired": 1},

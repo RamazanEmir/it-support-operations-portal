@@ -12,7 +12,9 @@ class Settings(BaseSettings):
         hide_input_in_errors=True,
     )
 
-    database_url: str = Field(validation_alias="DATABASE_URL", min_length=1, repr=False)
+    database_url: str = Field(min_length=1, repr=False)
+    jwt_secret_key: str = Field(min_length=32, repr=False)
+    access_token_expire_minutes: int = Field(default=30, gt=0)
 
 
 settings = Settings()

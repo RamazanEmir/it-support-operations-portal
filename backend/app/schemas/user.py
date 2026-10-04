@@ -1,6 +1,10 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints
 
 from app.core.enums import UserRole
+
+Password = Annotated[str, StringConstraints(strip_whitespace=False, min_length=12, max_length=128)]
 
 
 class UserBase(BaseModel):
@@ -12,11 +16,11 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    pass
+    password: Password = Field(repr=False)
 
 
 class UserUpdate(UserBase):
-    pass
+    password: Password | None = Field(default=None, repr=False)
 
 
 class UserResponse(UserBase):

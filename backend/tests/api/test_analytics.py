@@ -37,6 +37,7 @@ def test_work_log_analytics_by_technician(
 ) -> None:
     second = client.post("/api/v1/users", json={
         "name": "Second Technician", "email": "second@example.com", "role": "technician",
+        "password": "Test-only password 123!",
     })
     assert second.status_code == 201
     second_id = second.json()["id"]

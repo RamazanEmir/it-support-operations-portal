@@ -3,12 +3,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import require_roles
 from app.core.database import get_db
+from app.core.enums import UserRole
 from app.models import AssetAssignment
 from app.schemas.asset_assignment import AssetAssignmentCreate, AssetAssignmentResponse
 from app.services import asset_assignment_service, asset_service, user_service
 
-router = APIRouter(prefix="/asset-assignments", tags=["Asset Assignments"])
+router = APIRouter(
+    prefix="/asset-assignments", tags=["Asset Assignments"],
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.TECHNICIAN))],
+)
 
 
 @router.get("", response_model=list[AssetAssignmentResponse])

@@ -3,12 +3,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth import require_roles
 from app.core.database import get_db
+from app.core.enums import UserRole
 from app.models import Asset
 from app.schemas.asset import AssetCreate, AssetResponse, AssetUpdate
 from app.services import asset_service
 
-router = APIRouter(prefix="/assets", tags=["Assets"])
+router = APIRouter(
+    prefix="/assets", tags=["Assets"],
+    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.TECHNICIAN))],
+)
 
 
 @router.get("", response_model=list[AssetResponse])
@@ -46,7 +51,10 @@ def update_asset(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from None
 
 
-@router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{asset_id}", status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_roles(UserRole.ADMIN))],
+)
 def delete_asset(asset_id: int, db: Annotated[Session, Depends(get_db)]) -> Response:
     try:
         asset_service.delete_asset(db, asset_id)
