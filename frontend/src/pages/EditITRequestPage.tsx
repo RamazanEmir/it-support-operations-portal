@@ -33,7 +33,7 @@ function EditITRequestPage() {
     },
     onSettled: () => { submitting.current = false },
   })
-  const notFound = !validId || (request.error instanceof ApiError && request.error.status === 404)
+  const notFound = !validId || (!request.data && request.error instanceof ApiError && request.error.status === 404)
 
   return (
     <>
@@ -43,17 +43,25 @@ function EditITRequestPage() {
         <Card className="p-6"><p role="alert" className="text-sm text-slate-600">IT Request not found.</p></Card>
       ) : request.isPending ? (
         <p role="status" className="text-sm text-slate-500">Loading IT request...</p>
-      ) : request.isError ? (
+      ) : request.isError && !request.data ? (
         <Card className="space-y-4 p-6">
           <p role="alert" className="text-sm text-red-700">{getITRequestErrorMessage(request.error, 'load')}</p>
           <Button variant="secondary" disabled={request.isFetching} onClick={() => void request.refetch()}>Retry</Button>
         </Card>
       ) : (
-        <ITRequestForm key={id} mode="edit" initialValues={request.data} users={users.data ?? []}
-          usersLoading={users.isPending} usersError={users.isError} usersFetching={users.isFetching} onRetryUsers={() => void users.refetch()}
-          pending={update.isPending} error={update.isError ? getITRequestErrorMessage(update.error, 'update') : undefined}
-          onSubmit={(data) => { if (!submitting.current) { submitting.current = true; update.mutate({ requestId: id, data }) } }}
-          onCancel={() => navigate(`/it-requests/${id}`)} />
+        <>
+          {request.isError && (
+            <div className="mb-5 space-y-3">
+              <p role="alert" className="text-sm text-red-700">{getITRequestErrorMessage(request.error, 'load')} Your changes are preserved.</p>
+              <Button variant="secondary" disabled={request.isFetching} onClick={() => void request.refetch()}>Retry</Button>
+            </div>
+          )}
+          <ITRequestForm key={id} mode="edit" initialValues={request.data} users={users.data ?? []}
+            usersLoading={users.isPending} usersError={users.isError} usersFetching={users.isFetching} onRetryUsers={() => void users.refetch()}
+            pending={update.isPending} error={update.isError ? getITRequestErrorMessage(update.error, 'update') : undefined}
+            onSubmit={(data) => { if (!submitting.current) { submitting.current = true; update.mutate({ requestId: id, data }) } }}
+            onCancel={() => navigate(`/it-requests/${id}`)} />
+        </>
       )}
     </>
   )

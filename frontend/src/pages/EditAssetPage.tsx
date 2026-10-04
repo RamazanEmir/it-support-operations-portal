@@ -31,7 +31,7 @@ function EditAssetPage() {
     },
     onSettled: () => { submitting.current = false },
   })
-  const notFound = !validId || (request.error instanceof ApiError && request.error.status === 404)
+  const notFound = !validId || (!request.data && request.error instanceof ApiError && request.error.status === 404)
 
   return (
     <>
@@ -41,16 +41,24 @@ function EditAssetPage() {
         <Card className="p-6"><p role="alert" className="text-sm text-slate-600">Asset not found.</p></Card>
       ) : request.isPending ? (
         <p role="status" className="text-sm text-slate-500">Loading asset...</p>
-      ) : request.isError ? (
+      ) : request.isError && !request.data ? (
         <Card className="space-y-4 p-6">
           <p role="alert" className="text-sm text-red-700">{getAssetErrorMessage(request.error, 'load')}</p>
           <Button variant="secondary" disabled={request.isFetching} onClick={() => void request.refetch()}>Retry</Button>
         </Card>
       ) : (
-        <AssetForm key={id} mode="edit" initialValues={request.data}
-          pending={update.isPending} error={update.isError ? getAssetErrorMessage(update.error, 'update') : undefined}
-          onSubmit={(data) => { if (!submitting.current) { submitting.current = true; update.mutate({ assetId: id, data }) } }}
-          onCancel={() => navigate(`/assets/${id}`)} />
+        <>
+          {request.isError && (
+            <div className="mb-5 space-y-3">
+              <p role="alert" className="text-sm text-red-700">{getAssetErrorMessage(request.error, 'load')} Your changes are preserved.</p>
+              <Button variant="secondary" disabled={request.isFetching} onClick={() => void request.refetch()}>Retry</Button>
+            </div>
+          )}
+          <AssetForm key={id} mode="edit" initialValues={request.data}
+            pending={update.isPending} error={update.isError ? getAssetErrorMessage(update.error, 'update') : undefined}
+            onSubmit={(data) => { if (!submitting.current) { submitting.current = true; update.mutate({ assetId: id, data }) } }}
+            onCancel={() => navigate(`/assets/${id}`)} />
+        </>
       )}
     </>
   )

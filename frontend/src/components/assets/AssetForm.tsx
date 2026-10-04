@@ -44,7 +44,7 @@ function AssetForm(props: AssetFormProps) {
     for (const field of textFields) {
       const value = fields[field.name].trim()
       if (!value) nextErrors[field.name] = `Enter ${field.label.toLowerCase()}.`
-      else if (value.length > field.maxLength) nextErrors[field.name] = `Use at most ${field.maxLength} characters.`
+      else if (Array.from(value).length > field.maxLength) nextErrors[field.name] = `Use at most ${field.maxLength} characters.`
     }
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length || !category) return
@@ -64,7 +64,7 @@ function AssetForm(props: AssetFormProps) {
         <fieldset disabled={pending} className="grid gap-5 sm:grid-cols-2">
           {textFields.map((field) => (
             <FormField key={field.name} label={field.label} htmlFor={`${fieldId}-${field.name}`} error={errors[field.name]}>
-              <Input id={`${fieldId}-${field.name}`} name={field.name} value={fields[field.name]} required maxLength={field.maxLength}
+              <Input id={`${fieldId}-${field.name}`} name={field.name} value={fields[field.name]} required
                 onChange={(event) => setFields({ ...fields, [field.name]: event.target.value })}
                 aria-invalid={Boolean(errors[field.name])} aria-describedby={errors[field.name] ? `${fieldId}-${field.name}-error` : undefined} />
             </FormField>

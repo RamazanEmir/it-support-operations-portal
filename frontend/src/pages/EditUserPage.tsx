@@ -27,7 +27,7 @@ function EditUserPage() {
       navigate('/users')
     },
   })
-  const notFound = !validId || (user.error instanceof ApiError && user.error.status === 404)
+  const notFound = !validId || (!user.data && user.error instanceof ApiError && user.error.status === 404)
 
   return (
     <>
@@ -37,17 +37,25 @@ function EditUserPage() {
         <Card className="max-w-2xl p-6"><p role="alert" className="text-sm text-slate-600">User not found.</p></Card>
       ) : user.isPending ? (
         <p role="status" className="text-sm text-slate-500">Loading user...</p>
-      ) : user.isError ? (
+      ) : user.isError && !user.data ? (
         <Card className="max-w-2xl space-y-4 p-6">
           <p role="alert" className="text-sm text-red-700">{getUserErrorMessage(user.error, 'load')}</p>
           <Button variant="secondary" disabled={user.isFetching} onClick={() => void user.refetch()}>Retry</Button>
         </Card>
       ) : (
-        <UserForm
-          key={id} initialValues={user.data} submitLabel="Save Changes" pending={update.isPending}
-          error={update.isError ? getUserErrorMessage(update.error, 'save') : undefined}
-          onSubmit={(data) => update.mutate(data)} onCancel={() => navigate('/users')}
-        />
+        <>
+          {user.isError && (
+            <div className="mb-5 space-y-3">
+              <p role="alert" className="text-sm text-red-700">{getUserErrorMessage(user.error, 'load')} Your changes are preserved.</p>
+              <Button variant="secondary" disabled={user.isFetching} onClick={() => void user.refetch()}>Retry</Button>
+            </div>
+          )}
+          <UserForm
+            key={id} initialValues={user.data} submitLabel="Save Changes" pending={update.isPending}
+            error={update.isError ? getUserErrorMessage(update.error, 'save') : undefined}
+            onSubmit={(data) => update.mutate(data)} onCancel={() => navigate('/users')}
+          />
+        </>
       )}
     </>
   )

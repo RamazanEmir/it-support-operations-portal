@@ -23,6 +23,7 @@ function UserForm({ initialValues, submitLabel, pending, error, onSubmit, onCanc
   const [email, setEmail] = useState(initialValues?.email ?? '')
   const [role, setRole] = useState<UserRole | ''>(initialValues?.role ?? '')
   const [nameError, setNameError] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -30,6 +31,16 @@ function UserForm({ initialValues, submitLabel, pending, error, onSubmit, onCanc
     if (!name.trim()) {
       setNameError('Enter a name.')
       document.getElementById(`${fieldId}-name`)?.focus()
+      return
+    }
+    if (Array.from(name.trim()).length > 100) {
+      setNameError('Use at most 100 characters.')
+      document.getElementById(`${fieldId}-name`)?.focus()
+      return
+    }
+    if (Array.from(email.trim()).length > 254) {
+      setEmailError('Use at most 254 characters.')
+      document.getElementById(`${fieldId}-email`)?.focus()
       return
     }
     if (!email.trim() || !role) return
@@ -42,18 +53,20 @@ function UserForm({ initialValues, submitLabel, pending, error, onSubmit, onCanc
         <fieldset disabled={pending} className="space-y-5">
           <FormField label="Name" htmlFor={`${fieldId}-name`} error={nameError}>
             <Input
-              id={`${fieldId}-name`} name="name" value={name} required maxLength={100}
+              id={`${fieldId}-name`} name="name" value={name} required
               autoComplete="name" placeholder="Full name"
               aria-invalid={Boolean(nameError)}
               aria-describedby={nameError ? `${fieldId}-name-error` : undefined}
               onChange={(event) => { setName(event.target.value); setNameError('') }}
             />
           </FormField>
-          <FormField label="Email" htmlFor={`${fieldId}-email`}>
+          <FormField label="Email" htmlFor={`${fieldId}-email`} error={emailError}>
             <Input
               id={`${fieldId}-email`} name="email" type="email" value={email}
-              required maxLength={254} autoComplete="email" placeholder="name@company.com"
-              onChange={(event) => setEmail(event.target.value)}
+              required autoComplete="email" placeholder="name@company.com"
+              aria-invalid={Boolean(emailError)}
+              aria-describedby={emailError ? `${fieldId}-email-error` : undefined}
+              onChange={(event) => { setEmail(event.target.value); setEmailError('') }}
             />
           </FormField>
           <FormField label="Role" htmlFor={`${fieldId}-role`}>

@@ -37,7 +37,7 @@ function TicketForm({ users, usersLoading, usersError, usersFetching, onRetryUse
     if (pending || requestersUnavailable) return
     const employee_id = Number(employeeId)
     const nextErrors = {
-      title: title.trim() ? undefined : 'Enter a title.',
+      title: !title.trim() ? 'Enter a title.' : Array.from(title.trim()).length > 150 ? 'Use at most 150 characters.' : undefined,
       description: description.trim() ? undefined : 'Enter a description.',
       requester: users.some((user) => user.id === employee_id) ? undefined : 'Select an available requester.',
     }
@@ -52,7 +52,7 @@ function TicketForm({ users, usersLoading, usersError, usersFetching, onRetryUse
         <fieldset disabled={pending} className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <FormField label="Title" htmlFor={`${fieldId}-title`} error={errors.title}>
-              <Input id={`${fieldId}-title`} name="title" value={title} required maxLength={150}
+              <Input id={`${fieldId}-title`} name="title" value={title} required
                 placeholder="Briefly describe the issue" onChange={(event) => setTitle(event.target.value)}
                 aria-invalid={Boolean(errors.title)} aria-describedby={errors.title ? `${fieldId}-title-error` : undefined} />
             </FormField>

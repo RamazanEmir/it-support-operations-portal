@@ -34,7 +34,7 @@ function EditWorkLogPage() {
     },
     onSettled: () => { submitting.current = false },
   })
-  const notFound = !validId || (request.error instanceof ApiError && request.error.status === 404)
+  const notFound = !validId || (!request.data && request.error instanceof ApiError && request.error.status === 404)
 
   return (
     <>
@@ -44,16 +44,24 @@ function EditWorkLogPage() {
         <Card className="p-6"><p role="alert" className="text-sm text-slate-600">Work Log not found.</p></Card>
       ) : request.isPending ? (
         <p role="status" className="text-sm text-slate-500">Loading work log...</p>
-      ) : request.isError ? (
+      ) : request.isError && !request.data ? (
         <Card className="space-y-4 p-6">
           <p role="alert" className="text-sm text-red-700">{getWorkLogErrorMessage(request.error, 'load')}</p>
           <Button variant="secondary" disabled={request.isFetching} onClick={() => void request.refetch()}>Retry</Button>
         </Card>
       ) : (
-        <WorkLogForm key={id} initialValues={request.data}
-          pending={update.isPending} error={update.isError ? getWorkLogErrorMessage(update.error, 'save') : undefined}
-          onSubmit={(data) => { if (!submitting.current) { submitting.current = true; update.mutate({ workLogId: id, data }) } }}
-          onCancel={() => navigate(`/work-logs/${id}`)} />
+        <>
+          {request.isError && (
+            <div className="mb-5 space-y-3">
+              <p role="alert" className="text-sm text-red-700">{getWorkLogErrorMessage(request.error, 'load')} Your changes are preserved.</p>
+              <Button variant="secondary" disabled={request.isFetching} onClick={() => void request.refetch()}>Retry</Button>
+            </div>
+          )}
+          <WorkLogForm key={id} initialValues={request.data}
+            pending={update.isPending} error={update.isError ? getWorkLogErrorMessage(update.error, 'save') : undefined}
+            onSubmit={(data) => { if (!submitting.current) { submitting.current = true; update.mutate({ workLogId: id, data }) } }}
+            onCancel={() => navigate(`/work-logs/${id}`)} />
+        </>
       )}
     </>
   )
