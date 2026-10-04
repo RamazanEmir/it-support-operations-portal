@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
@@ -12,6 +13,7 @@ import PageHeader from '../components/ui/PageHeader'
 import Table from '../components/ui/Table'
 
 function KnowledgeBasePage() {
+  const { currentUser } = useAuth()
   const navigate = useNavigate()
   const [searchInput, setSearchInput] = useState('')
   const [appliedSearch, setAppliedSearch] = useState('')
@@ -23,7 +25,7 @@ function KnowledgeBasePage() {
   return (
     <>
       <PageHeader title="Knowledge Base" description={articles.data ? `${articles.data.length} articles${appliedSearch ? ' found' : ''}` : undefined}
-        action={<Button onClick={() => navigate('/knowledge-base/new')}><Icon name="plus" className="size-4" />Add Article</Button>} />
+        action={currentUser?.role !== 'employee' && <Button onClick={() => navigate('/knowledge-base/new')}><Icon name="plus" className="size-4" />Add Article</Button>} />
       <form className="mb-6 flex flex-wrap items-end gap-3" onSubmit={(event) => { event.preventDefault(); setAppliedSearch(searchInput.trim()) }}>
         <div className="min-w-0 flex-1 sm:max-w-md">
           <FormField label="Search articles" htmlFor="article-search">
@@ -42,7 +44,7 @@ function KnowledgeBasePage() {
             <Button variant="secondary" disabled={articles.isFetching} onClick={() => void articles.refetch()}>Retry</Button>
           </div>
         ) : articles.data.length === 0 ? (
-          <p role="status" className="px-6 py-12 text-center text-sm text-slate-500">{appliedSearch ? 'No matching articles.' : 'No articles yet. Add an article to get started.'}</p>
+          <p role="status" className="px-6 py-12 text-center text-sm text-slate-500">{appliedSearch ? 'No matching articles.' : currentUser?.role === 'employee' ? 'No articles yet.' : 'No articles yet. Add an article to get started.'}</p>
         ) : (
           <Table label="Knowledge Base articles" headers={['Title', 'Category', 'Updated', 'Actions']}>
             {articles.data.map((article) => (

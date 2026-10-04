@@ -1,3 +1,4 @@
+import { useAuth } from '../../auth/AuthContext'
 import { Link, NavLink, useMatch } from 'react-router'
 import Button from '../ui/Button'
 import Icon from '../ui/Icon'
@@ -5,6 +6,8 @@ import Icon from '../ui/Icon'
 type SidebarProps = { onClose?: () => void }
 
 function Sidebar({ onClose }: SidebarProps) {
+  const { currentUser } = useAuth()
+  const isStaff = currentUser?.role === 'admin' || currentUser?.role === 'technician'
   const analyticsActive = Boolean(useMatch('/analytics'))
 
   return (
@@ -26,7 +29,7 @@ function Sidebar({ onClose }: SidebarProps) {
         )}
       </div>
       <nav aria-label="Main navigation" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-5">
-        <div className="mb-5">
+        {isStaff && (<div className="mb-5">
           <NavLink
             to="/" end onClick={onClose}
             className={({ isActive }) => `relative flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${isActive
@@ -36,7 +39,7 @@ function Sidebar({ onClose }: SidebarProps) {
             <Icon name="dashboard" />
             Dashboard
           </NavLink>
-        </div>
+        </div>)}
         <div className="mb-5">
           <div className="mb-2 px-3 text-xs font-medium text-slate-400">Support</div>
           <NavLink
@@ -58,7 +61,7 @@ function Sidebar({ onClose }: SidebarProps) {
             IT Requests
           </NavLink>
         </div>
-        <div className="mb-2 px-3 text-xs font-medium text-slate-400">Users</div>
+        {currentUser?.role === 'admin' && <><div className="mb-2 px-3 text-xs font-medium text-slate-400">Users</div>
         <NavLink
           to="/users" onClick={onClose}
           className={({ isActive }) => `relative flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${isActive
@@ -67,8 +70,8 @@ function Sidebar({ onClose }: SidebarProps) {
         >
           <Icon name="users" />
             Users
-        </NavLink>
-        <div className="pt-4">
+        </NavLink></>}
+        {isStaff && (<div className="pt-4">
           <div className="mb-2 px-3 text-xs font-medium text-slate-400">Assets</div>
           <NavLink
             to="/assets" onClick={onClose}
@@ -88,10 +91,10 @@ function Sidebar({ onClose }: SidebarProps) {
             <Icon name="asset" />
             Assignments
           </NavLink>
-        </div>
+        </div>)}
         <div className="pt-4">
           <div className="mb-2 px-3 text-xs font-medium text-slate-400">Operations</div>
-          <NavLink
+          {isStaff && (<NavLink
             to="/work-logs" onClick={onClose}
             className={({ isActive }) => `relative flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${isActive
               ? 'bg-slate-800 text-white hover:bg-slate-800 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-blue-400'
@@ -99,7 +102,7 @@ function Sidebar({ onClose }: SidebarProps) {
           >
             <Icon name="ticket" />
             Work Logs
-          </NavLink>
+          </NavLink>)}
           <NavLink
             to="/knowledge-base" onClick={onClose}
             className={({ isActive }) => `relative flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${isActive
@@ -110,7 +113,7 @@ function Sidebar({ onClose }: SidebarProps) {
             Knowledge Base
           </NavLink>
         </div>
-        <div className="pt-4">
+        {isStaff && (<div className="pt-4">
           <div className="mb-2 px-3 text-xs font-medium text-slate-400">Reports</div>
           <Link
             to="/analytics" onClick={onClose} aria-current={analyticsActive ? 'page' : undefined}
@@ -121,7 +124,7 @@ function Sidebar({ onClose }: SidebarProps) {
             <Icon name="dashboard" />
             Analytics
           </Link>
-        </div>
+        </div>)}
       </nav>
     </aside>
   )

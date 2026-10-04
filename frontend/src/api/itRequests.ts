@@ -6,9 +6,9 @@ export type ITRequestCreateInput = {
   title: string
   description: string
   request_type: RequestType
-  employee_id: number
+  employee_id?: number
 }
-export type ITRequestUpdateInput = ITRequestCreateInput & { status: RequestStatus }
+export type ITRequestUpdateInput = ITRequestCreateInput & { status: RequestStatus; employee_id: number }
 export type ITRequest = ITRequestUpdateInput & { id: number; created_at: string; updated_at: string }
 
 export const requestTypeLabels: Record<RequestType, string> = {

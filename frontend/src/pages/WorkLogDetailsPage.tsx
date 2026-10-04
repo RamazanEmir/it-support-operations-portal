@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
@@ -14,6 +15,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import PageHeader from '../components/ui/PageHeader'
 
 function WorkLogDetailsPage() {
+  const { currentUser } = useAuth()
   const { id: routeId } = useParams()
   const id = Number(routeId)
   const validId = /^\d+$/.test(routeId ?? '') && Number.isSafeInteger(id) && id > 0
@@ -40,6 +42,7 @@ function WorkLogDetailsPage() {
   })
   const notFound = !validId || (log.error instanceof ApiError && log.error.status === 404)
   const data = log.data
+  const canManage = currentUser?.role === 'admin' || (currentUser?.role === 'technician' && data?.technician_id === currentUser.id)
 
   return (
     <>
@@ -56,10 +59,10 @@ function WorkLogDetailsPage() {
         </Card>
       ) : data && (
         <>
-          <div className="mb-5 flex gap-3">
+          {canManage && (<div className="mb-5 flex gap-3">
             <Button variant="secondary" disabled={deletion.isPending} onClick={() => navigate(`/work-logs/${id}/edit`)}>Edit</Button>
             <Button variant="danger" disabled={deletion.isPending} onClick={() => { deletion.reset(); setConfirmDelete(true) }}>Delete</Button>
-          </div>
+          </div>)}
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(22rem,1fr)]">
             <Card className="min-w-0 p-6">
               <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Description</h2>
@@ -78,7 +81,7 @@ function WorkLogDetailsPage() {
           </div>
         </>
       )}
-      {confirmDelete && data && (
+      {canManage && confirmDelete && data && (
         <ConfirmDialog title="Delete work log?" confirmLabel="Delete Work Log" pending={deletion.isPending}
           error={deletion.isError ? getWorkLogErrorMessage(deletion.error, 'delete') : undefined}
           onConfirm={() => { if (!deleting.current) { deleting.current = true; deletion.mutate(id) } }}

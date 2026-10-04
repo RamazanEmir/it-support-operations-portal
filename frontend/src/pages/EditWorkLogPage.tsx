@@ -1,3 +1,5 @@
+import UnauthorizedPage from './UnauthorizedPage'
+import { useAuth } from '../auth/AuthContext'
 import { useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
@@ -12,6 +14,7 @@ import Card from '../components/ui/Card'
 import PageHeader from '../components/ui/PageHeader'
 
 function EditWorkLogPage() {
+  const { currentUser } = useAuth()
   const { id: routeId } = useParams()
   const id = Number(routeId)
   const validId = /^\d+$/.test(routeId ?? '') && Number.isSafeInteger(id) && id > 0
@@ -35,6 +38,8 @@ function EditWorkLogPage() {
     onSettled: () => { submitting.current = false },
   })
   const notFound = !validId || (!request.data && request.error instanceof ApiError && request.error.status === 404)
+
+  if (request.data && currentUser?.role === 'technician' && request.data.technician_id !== currentUser.id) return <UnauthorizedPage />
 
   return (
     <>

@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
@@ -9,10 +10,12 @@ import BackLink from '../components/ui/BackLink'
 import PageHeader from '../components/ui/PageHeader'
 
 function CreateITRequestPage() {
+  const { currentUser } = useAuth()
+  const isEmployee = currentUser?.role === 'employee'
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const submitting = useRef(false)
-  const users = useQuery({ queryKey: ['users'], queryFn: getUsers })
+  const users = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: !isEmployee })
   const creation = useMutation({
     mutationFn: createITRequest,
     onSuccess: async () => {

@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { createTicket, getTicketErrorMessage } from '../api/tickets'
@@ -7,9 +8,11 @@ import BackLink from '../components/ui/BackLink'
 import PageHeader from '../components/ui/PageHeader'
 
 function CreateTicketPage() {
+  const { currentUser } = useAuth()
+  const isEmployee = currentUser?.role === 'employee'
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const users = useQuery({ queryKey: ['users'], queryFn: getUsers })
+  const users = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: !isEmployee })
   const creation = useMutation({
     mutationFn: createTicket,
     onSuccess: async () => {

@@ -1,3 +1,4 @@
+import { ApiError } from '../api/client'
 import { useQuery } from '@tanstack/react-query'
 import { getAnalyticsOverview } from '../api/analytics'
 import { ticketCategoryLabels, ticketPriorityLabels } from '../api/tickets'
@@ -20,7 +21,7 @@ function AnalyticsPage() {
         <p role="status" className="text-sm text-slate-500">Loading analytics...</p>
       ) : overview.isError ? (
         <Card className="space-y-4 p-6">
-          <p role="alert" className="text-sm text-red-700">Analytics could not be loaded. Please try again.</p>
+          <p role="alert" className="text-sm text-red-700">{overview.error instanceof ApiError && overview.error.status === 403 ? 'You do not have permission to perform this action.' : 'Analytics could not be loaded. Please try again.'}</p>
           <Button variant="secondary" disabled={overview.isFetching} onClick={() => void overview.refetch()}>Retry</Button>
         </Card>
       ) : (

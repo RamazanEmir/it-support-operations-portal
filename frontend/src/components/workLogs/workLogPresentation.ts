@@ -34,6 +34,7 @@ export function workLogRelationLabel(log: Pick<WorkLog, 'ticket_id' | 'it_reques
 
 export function getWorkLogErrorMessage(error: unknown, action: 'load' | 'save' | 'delete'): string {
   if (error instanceof ApiError) {
+    if (error.status === 403) return 'You do not have permission to perform this action.'
     if (error.status === 404) return action === 'save'
       ? 'The work log, technician or related record is no longer available. Please check the record and refresh the options.'
       : 'Work Log not found.'

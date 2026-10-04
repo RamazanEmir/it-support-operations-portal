@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
@@ -13,6 +14,8 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import PageHeader from '../components/ui/PageHeader'
 
 function ITRequestDetailsPage() {
+  const { currentUser } = useAuth()
+  const isEmployee = currentUser?.role === 'employee'
   const { id: routeId } = useParams()
   const id = Number(routeId)
   const validId = /^\d+$/.test(routeId ?? '') && Number.isSafeInteger(id) && id > 0
@@ -24,7 +27,7 @@ function ITRequestDetailsPage() {
     queryKey: ['it-requests', id], queryFn: () => getITRequest(id), enabled: validId,
     retry: (count, error) => !(error instanceof ApiError && error.status === 404) && count < 2,
   })
-  const users = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: validId })
+  const users = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: validId && !isEmployee })
   const deletion = useMutation({
     mutationFn: deleteITRequest,
     onSuccess: async (_, requestId) => {
@@ -37,7 +40,7 @@ function ITRequestDetailsPage() {
   })
   const notFound = !validId || (request.error instanceof ApiError && request.error.status === 404)
   const data = request.data
-  const requester = users.isError ? undefined : users.data?.find((user) => user.id === data?.employee_id)
+  const requester = isEmployee ? currentUser : users.isError ? undefined : users.data?.find((user) => user.id === data?.employee_id)
 
   return (
     <>
@@ -54,10 +57,10 @@ function ITRequestDetailsPage() {
         </Card>
       ) : data && (
         <>
-          <div className="mb-5 flex gap-3">
+          {currentUser?.role !== 'employee' && (<div className="mb-5 flex gap-3">
             <Button variant="secondary" disabled={deletion.isPending} onClick={() => navigate(`/it-requests/${id}/edit`)}>Edit</Button>
-            <Button variant="danger" disabled={deletion.isPending} onClick={() => { deletion.reset(); setConfirmDelete(true) }}>Delete</Button>
-          </div>
+            {currentUser?.role === 'admin' && (<Button variant="danger" disabled={deletion.isPending} onClick={() => { deletion.reset(); setConfirmDelete(true) }}>Delete</Button>)}
+          </div>)}
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(22rem,1fr)]">
             <Card className="min-w-0 p-6">
               <h2 className="break-words text-xl font-semibold text-slate-900">{data.title}</h2>
@@ -79,7 +82,7 @@ function ITRequestDetailsPage() {
           </div>
         </>
       )}
-      {confirmDelete && data && (
+      {currentUser?.role === 'admin' && confirmDelete && data && (
         <ConfirmDialog title="Delete IT request?" confirmLabel="Delete IT Request" pending={deletion.isPending}
           error={deletion.isError ? getITRequestErrorMessage(deletion.error, 'delete') : undefined}
           onConfirm={() => { if (!deleting.current) { deleting.current = true; deletion.mutate(id) } }}

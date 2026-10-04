@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { getITRequests, requestStatusLabels, requestTypeLabels } from '../api/itRequests'
@@ -11,10 +12,12 @@ import PageHeader from '../components/ui/PageHeader'
 import Table from '../components/ui/Table'
 
 function ITRequestsPage() {
+  const { currentUser } = useAuth()
+  const isEmployee = currentUser?.role === 'employee'
   const navigate = useNavigate()
   const requests = useQuery({ queryKey: ['it-requests'], queryFn: getITRequests })
-  const users = useQuery({ queryKey: ['users'], queryFn: getUsers })
-  const requesterNames = new Map((users.isError ? [] : users.data ?? []).map((user) => [user.id, user.name]))
+  const users = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: !isEmployee })
+  const requesterNames = new Map((isEmployee && currentUser ? [currentUser] : users.isError ? [] : users.data ?? []).map((user) => [user.id, user.name]))
 
   return (
     <>

@@ -1,3 +1,4 @@
+import { ApiError } from '../api/client'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { getDashboardSummary } from '../api/dashboard'
@@ -33,7 +34,7 @@ function DashboardPage() {
           <p role="status" className="px-6 py-12 text-center text-sm text-slate-500">Loading summary...</p>
         ) : summary.isError ? (
           <div className="space-y-4 px-6 py-12 text-center">
-            <p role="alert" className="text-sm text-red-700">The dashboard summary could not be loaded. Please try again.</p>
+            <p role="alert" className="text-sm text-red-700">{summary.error instanceof ApiError && summary.error.status === 403 ? 'You do not have permission to perform this action.' : 'The dashboard summary could not be loaded. Please try again.'}</p>
             <Button variant="secondary" disabled={summary.isFetching} onClick={() => void summary.refetch()}>Retry</Button>
           </div>
         ) : (

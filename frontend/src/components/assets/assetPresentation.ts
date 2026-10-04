@@ -11,6 +11,7 @@ export function formatAssetDate(value: string): string {
 
 export function getAssetErrorMessage(error: unknown, action: 'load' | 'create' | 'update' | 'delete'): string {
   if (error instanceof ApiError) {
+    if (error.status === 403) return 'You do not have permission to perform this action.'
     if (error.status === 404) return 'Asset not found.'
     if (error.status === 409) {
       if (action === 'delete') return 'This asset cannot be deleted because assignment history exists.'

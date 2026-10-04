@@ -9,10 +9,11 @@ export type TicketCreateInput = {
   description: string
   category: TicketCategory
   priority: TicketPriority
-  employee_id: number
+  employee_id?: number
 }
 
 export type TicketUpdateInput = TicketCreateInput & {
+  employee_id: number
   status: TicketStatus
   resolution: string | null
 }
@@ -57,6 +58,7 @@ export async function updateTicket(id: number, data: TicketUpdateInput): Promise
 
 export function getTicketErrorMessage(error: unknown, action: 'load' | 'create' | 'update'): string {
   if (error instanceof ApiError) {
+    if (error.status === 403) return 'You do not have permission to perform this action.'
     if (error.status === 404) {
       if (action === 'create') return 'The selected requester no longer exists. Please refresh the users list.'
       if (action === 'update') return 'The ticket or its requester no longer exists. Please refresh the ticket.'

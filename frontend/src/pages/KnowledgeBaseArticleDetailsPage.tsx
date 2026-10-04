@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
@@ -11,6 +12,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import PageHeader from '../components/ui/PageHeader'
 
 function KnowledgeBaseArticleDetailsPage() {
+  const { currentUser } = useAuth()
   const { id: routeId } = useParams()
   const id = Number(routeId)
   const validId = /^\d+$/.test(routeId ?? '') && Number.isSafeInteger(id) && id > 0
@@ -50,10 +52,10 @@ function KnowledgeBaseArticleDetailsPage() {
         </Card>
       ) : data && (
         <>
-          <div className="mb-5 flex gap-3">
+          {currentUser?.role !== 'employee' && (<div className="mb-5 flex gap-3">
             <Button variant="secondary" disabled={deletion.isPending} onClick={() => navigate(`/knowledge-base/${id}/edit`)}>Edit</Button>
-            <Button variant="danger" disabled={deletion.isPending} onClick={() => { deletion.reset(); setConfirmDelete(true) }}>Delete</Button>
-          </div>
+            {currentUser?.role === 'admin' && (<Button variant="danger" disabled={deletion.isPending} onClick={() => { deletion.reset(); setConfirmDelete(true) }}>Delete</Button>)}
+          </div>)}
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(22rem,1fr)]">
             <Card className="min-w-0 p-6">
               <h2 className="mb-5 break-words text-xl font-semibold text-slate-900">{data.title}</h2>
@@ -70,7 +72,7 @@ function KnowledgeBaseArticleDetailsPage() {
           </div>
         </>
       )}
-      {confirmDelete && data && (
+      {currentUser?.role === 'admin' && confirmDelete && data && (
         <ConfirmDialog title="Delete article?" confirmLabel="Delete Article" pending={deletion.isPending}
           error={deletion.isError ? getKnowledgeBaseErrorMessage(deletion.error) : undefined}
           onConfirm={() => { if (!deleting.current) { deleting.current = true; deletion.mutate(id) } }}

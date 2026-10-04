@@ -11,6 +11,7 @@ export function formatRequestDate(value: string): string {
 
 export function getITRequestErrorMessage(error: unknown, action: 'load' | 'create' | 'update' | 'delete'): string {
   if (error instanceof ApiError) {
+    if (error.status === 403) return 'You do not have permission to perform this action.'
     if (error.status === 404) {
       if (action === 'create') return 'The selected requester no longer exists. Please refresh the users list.'
       if (action === 'update') return 'The IT request or its requester no longer exists. Please check the request and refresh users.'

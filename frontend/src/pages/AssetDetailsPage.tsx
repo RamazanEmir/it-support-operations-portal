@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
@@ -12,6 +13,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import PageHeader from '../components/ui/PageHeader'
 
 function AssetDetailsPage() {
+  const { currentUser } = useAuth()
   const { id: routeId } = useParams()
   const id = Number(routeId)
   const validId = /^\d+$/.test(routeId ?? '') && Number.isSafeInteger(id) && id > 0
@@ -53,7 +55,7 @@ function AssetDetailsPage() {
         <>
           <div className="mb-5 flex gap-3">
             <Button variant="secondary" disabled={deletion.isPending} onClick={() => navigate(`/assets/${id}/edit`)}>Edit</Button>
-            <Button variant="danger" disabled={deletion.isPending} onClick={() => { deletion.reset(); setConfirmDelete(true) }}>Delete</Button>
+            {currentUser?.role === 'admin' && (<Button variant="danger" disabled={deletion.isPending} onClick={() => { deletion.reset(); setConfirmDelete(true) }}>Delete</Button>)}
           </div>
           <Card className="max-w-4xl overflow-hidden">
             <div className="border-b border-slate-200 px-5 py-4"><h2 className="break-words text-xl font-semibold text-slate-900">{data.name}</h2></div>
@@ -70,7 +72,7 @@ function AssetDetailsPage() {
           </Card>
         </>
       )}
-      {confirmDelete && data && (
+      {currentUser?.role === 'admin' && confirmDelete && data && (
         <ConfirmDialog title="Delete asset?" confirmLabel="Delete Asset" pending={deletion.isPending}
           error={deletion.isError ? getAssetErrorMessage(deletion.error, 'delete') : undefined}
           onConfirm={() => { if (!deleting.current) { deleting.current = true; deletion.mutate(id) } }}

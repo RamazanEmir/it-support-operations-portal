@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
 import { getUser, getUserErrorMessage, updateUser } from '../api/users'
@@ -19,14 +20,27 @@ function EditUserPage() {
     queryKey: ['users', id], queryFn: () => getUser(id), enabled: validId,
     retry: (count, error) => !(error instanceof ApiError && error.status === 404) && count < 2,
   })
-  const update = useMutation({
-    mutationFn: (data: UserUpdateInput) => updateUser(id, data),
-    onSuccess: async (data) => {
+  const submitting = useRef(false)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string>()
+
+  async function submit(input: UserUpdateInput) {
+    if (submitting.current) return
+    submitting.current = true
+    setPending(true)
+    setError(undefined)
+    try {
+      const data = await updateUser(id, input)
       queryClient.setQueryData(['users', id], data)
       await queryClient.invalidateQueries({ queryKey: ['users'], exact: true })
       navigate('/users')
-    },
-  })
+    } catch (error) {
+      setError(getUserErrorMessage(error, 'save'))
+    } finally {
+      submitting.current = false
+      setPending(false)
+    }
+  }
   const notFound = !validId || (!user.data && user.error instanceof ApiError && user.error.status === 404)
 
   return (
@@ -50,10 +64,10 @@ function EditUserPage() {
               <Button variant="secondary" disabled={user.isFetching} onClick={() => void user.refetch()}>Retry</Button>
             </div>
           )}
-          <UserForm
-            key={id} initialValues={user.data} submitLabel="Save Changes" pending={update.isPending}
-            error={update.isError ? getUserErrorMessage(update.error, 'save') : undefined}
-            onSubmit={(data) => update.mutate(data)} onCancel={() => navigate('/users')}
+          <UserForm mode="edit"
+            key={id} initialValues={user.data} submitLabel="Save Changes" pending={pending}
+            error={error}
+            onSubmit={(data) => void submit(data)} onCancel={() => navigate('/users')}
           />
         </>
       )}

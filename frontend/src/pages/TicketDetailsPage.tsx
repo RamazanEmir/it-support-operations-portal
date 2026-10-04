@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router'
@@ -12,6 +13,8 @@ import PageHeader from '../components/ui/PageHeader'
 import Select from '../components/ui/Select'
 
 function TicketDetailsPage() {
+  const { currentUser } = useAuth()
+  const isEmployee = currentUser?.role === 'employee'
   const { id: routeId } = useParams()
   const id = Number(routeId)
   const validId = /^\d+$/.test(routeId ?? '') && Number.isSafeInteger(id) && id > 0
@@ -21,7 +24,7 @@ function TicketDetailsPage() {
     queryKey: ['tickets', id], queryFn: () => getTicket(id), enabled: validId,
     retry: (count, error) => !(error instanceof ApiError && error.status === 404) && count < 2,
   })
-  const users = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: validId })
+  const users = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: validId && !isEmployee })
   const update = useMutation({
     mutationFn: ({ ticketId, data }: { ticketId: number; data: TicketUpdateInput }) => updateTicket(ticketId, data),
     onSuccess: async (data) => {
@@ -35,7 +38,7 @@ function TicketDetailsPage() {
   })
 
   function updateSelection(changes: Partial<Pick<Ticket, 'priority' | 'status'>>) {
-    if (!ticket.data || updating.current || ticket.isError) return
+    if (isEmployee || !ticket.data || updating.current || ticket.isError) return
     const current = queryClient.getQueryData<Ticket>(['tickets', id]) ?? ticket.data
     const data: TicketUpdateInput = {
       title: current.title,
@@ -52,7 +55,7 @@ function TicketDetailsPage() {
 
   const notFound = !validId || (ticket.error instanceof ApiError && ticket.error.status === 404)
   const data = ticket.data
-  const requester = users.isError ? undefined : users.data?.find((user) => user.id === data?.employee_id)
+  const requester = isEmployee ? currentUser : users.isError ? undefined : users.data?.find((user) => user.id === data?.employee_id)
 
   return (
     <>
@@ -84,7 +87,7 @@ function TicketDetailsPage() {
             <div className="border-b border-slate-200 px-5 py-4"><h2 className="text-base font-semibold">Details</h2></div>
             <div className="space-y-4 p-5">
               <DetailRow label="Category" value={ticketCategoryLabels[data.category]} />
-              <div className="flex items-center justify-between gap-4">
+              {isEmployee ? <><DetailRow label="Priority" value={ticketPriorityLabels[data.priority]} /><DetailRow label="Status" value={ticketStatusLabels[data.status]} /></> : <><div className="flex items-center justify-between gap-4">
                 <label htmlFor="ticket-detail-priority" className="text-sm text-slate-500">Priority</label>
                 <Select id="ticket-detail-priority" className="min-h-9 max-w-40 py-1.5" value={data.priority} disabled={update.isPending}
                   onChange={(event) => updateSelection({ priority: event.target.value as TicketPriority })}>
@@ -97,7 +100,7 @@ function TicketDetailsPage() {
                   onChange={(event) => updateSelection({ status: event.target.value as TicketStatus })}>
                   {Object.entries(ticketStatusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                 </Select>
-              </div>
+              </div></>}
               <DetailRow label="Requester" value={requester?.name ?? `User unavailable (#${data.employee_id})`} />
               <DetailRow label="Created At" value={formatTicketDate(data.created_at)} />
               <DetailRow label="Updated At" value={formatTicketDate(data.updated_at)} />

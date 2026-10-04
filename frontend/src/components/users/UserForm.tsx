@@ -1,7 +1,7 @@
 import { useId, useState } from 'react'
 import type { FormEvent } from 'react'
 import { userRoleLabels } from '../../api/users'
-import type { UserCreateInput, UserRole } from '../../api/users'
+import type { UserCreateInput, UserUpdateInput, User, UserRole } from '../../api/users'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 import FormField from '../ui/FormField'
@@ -9,21 +9,25 @@ import Input from '../ui/Input'
 import Select from '../ui/Select'
 
 type UserFormProps = {
-  initialValues?: UserCreateInput
   submitLabel: string
   pending: boolean
   error?: string
-  onSubmit: (data: UserCreateInput) => void
   onCancel: () => void
-}
+} & (
+  | { mode: 'create'; initialValues?: never; onSubmit: (data: UserCreateInput) => void }
+  | { mode: 'edit'; initialValues?: User; onSubmit: (data: UserUpdateInput) => void }
+)
 
-function UserForm({ initialValues, submitLabel, pending, error, onSubmit, onCancel }: UserFormProps) {
+function UserForm(props: UserFormProps) {
+  const { initialValues, submitLabel, pending, error, onCancel } = props
   const fieldId = useId()
   const [name, setName] = useState(initialValues?.name ?? '')
   const [email, setEmail] = useState(initialValues?.email ?? '')
   const [role, setRole] = useState<UserRole | ''>(initialValues?.role ?? '')
   const [nameError, setNameError] = useState('')
   const [emailError, setEmailError] = useState('')
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -44,7 +48,15 @@ function UserForm({ initialValues, submitLabel, pending, error, onSubmit, onCanc
       return
     }
     if (!email.trim() || !role) return
-    onSubmit({ name: name.trim(), email: email.trim(), role })
+    const passwordLength = Array.from(password).length
+    if ((props.mode === 'create' || password !== '') && (passwordLength < 12 || passwordLength > 128)) {
+      setPasswordError('Use 12 to 128 characters for the password.')
+      document.getElementById(`${fieldId}-password`)?.focus()
+      return
+    }
+    const data = { name: name.trim(), email: email.trim(), role }
+    if (props.mode === 'create') props.onSubmit({ ...data, password })
+    else props.onSubmit({ ...data, ...(password !== '' ? { password } : {}) })
   }
 
   return (
@@ -74,6 +86,12 @@ function UserForm({ initialValues, submitLabel, pending, error, onSubmit, onCanc
               <option value="" disabled>Select a role</option>
               {Object.entries(userRoleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </Select>
+          </FormField>
+          <FormField label={props.mode === 'create' ? 'Password' : 'New Password (optional)'} htmlFor={`${fieldId}-password`} error={passwordError}>
+            <Input id={`${fieldId}-password`} name="password" type="password" autoComplete="new-password"
+              value={password} required={props.mode === 'create'}
+              aria-invalid={Boolean(passwordError)} aria-describedby={passwordError ? `${fieldId}-password-error` : undefined}
+              onChange={(event) => { setPassword(event.target.value); setPasswordError('') }} />
           </FormField>
         </fieldset>
         {error && <p role="alert" className="mt-5 text-sm text-red-700">{error}</p>}

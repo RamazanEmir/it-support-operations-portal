@@ -2,14 +2,15 @@ import { ApiError, request } from './client'
 
 export type UserRole = 'admin' | 'technician' | 'employee'
 
-export type UserCreateInput = {
+export type User = {
+  id: number
   name: string
   email: string
   role: UserRole
 }
 
-export type UserUpdateInput = UserCreateInput
-export type User = UserCreateInput & { id: number }
+export type UserCreateInput = Omit<User, 'id'> & { password: string }
+export type UserUpdateInput = Omit<User, 'id'> & { password?: string }
 
 export const userRoleLabels: Record<UserRole, string> = {
   admin: 'Admin',
@@ -44,6 +45,7 @@ export async function deleteUser(id: number): Promise<void> {
 
 export function getUserErrorMessage(error: unknown, action: 'load' | 'save' | 'delete'): string {
   if (error instanceof ApiError) {
+    if (error.status === 403) return 'You do not have permission to perform this action.'
     if (error.status === 404) return 'User not found.'
     if (error.status === 409) {
       return action === 'delete'

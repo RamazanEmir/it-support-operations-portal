@@ -1,3 +1,4 @@
+import { useAuth } from '../auth/AuthContext'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
@@ -15,13 +16,15 @@ import Select from '../components/ui/Select'
 import Table from '../components/ui/Table'
 
 function TicketsPage() {
+  const { currentUser } = useAuth()
+  const isEmployee = currentUser?.role === 'employee'
   const navigate = useNavigate()
   const tickets = useQuery({ queryKey: ['tickets'], queryFn: getTickets })
-  const users = useQuery({ queryKey: ['users'], queryFn: getUsers })
+  const users = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: !isEmployee })
   const [category, setCategory] = useState<TicketCategory | ''>('')
   const [priority, setPriority] = useState<TicketPriority | ''>('')
   const [status, setStatus] = useState<TicketStatus | ''>('')
-  const requesterNames = new Map((users.isError ? [] : users.data ?? []).map((user) => [user.id, user.name]))
+  const requesterNames = new Map((isEmployee && currentUser ? [currentUser] : users.isError ? [] : users.data ?? []).map((user) => [user.id, user.name]))
   const filteredTickets = (tickets.data ?? []).filter((ticket) =>
     (!category || ticket.category === category) &&
     (!priority || ticket.priority === priority) &&

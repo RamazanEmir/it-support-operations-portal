@@ -25,6 +25,7 @@ export function formatAssignmentDate(value: string | null): string {
 
 export function getAssignmentErrorMessage(error: unknown, action: 'load' | 'create' | 'return'): string {
   if (error instanceof ApiError) {
+    if (error.status === 403) return 'You do not have permission to perform this action.'
     if (error.status === 404) return action === 'create'
       ? 'The selected asset or employee is no longer available. Please refresh the options.'
       : 'Assignment not found.'
